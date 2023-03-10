@@ -80,9 +80,9 @@ void update(void){
 
   triangles_to_render = NULL;
 
-  mesh.rotation.y += 0.02;
-  mesh.rotation.x += 0.022;
-  mesh.rotation.z += 0.025;
+  mesh.rotation.y += 0.005;
+  mesh.rotation.x += 0.008;
+  mesh.rotation.z += 0.010;
 
 
   /*NOTE(Brandon): Loop over all the faces */
