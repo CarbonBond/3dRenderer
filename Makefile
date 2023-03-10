@@ -4,8 +4,8 @@ debug:
 	gcc -ggdb -Wall -std=c99 ./src/*.c -lSDL2 -lm -o ./bin/renderer
 
 run:
-	./renderer
+	./bin/renderer
 
 clean:
-	rm renderer
+	rm ./bin/*
 	
