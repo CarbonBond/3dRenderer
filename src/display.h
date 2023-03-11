@@ -9,6 +9,13 @@
 #define FPS 60
 #define FRAME_TARGET_TIME (1000 / FPS)
 
+typedef struct {
+  int vertex;
+  int wireframe;
+  int triangles;
+  int backface;
+} render_mode;
+
 extern SDL_Window* window;
 extern SDL_Renderer* renderer;
 extern uint32_t* color_buffer;
