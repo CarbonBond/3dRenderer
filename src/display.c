@@ -99,8 +99,8 @@ void draw_grid(uint32_t color, uint32_t gridSpacing){
 }
 
 void draw_rect(int x, int y, int width, int height, uint32_t color) {
-  for (int current_y = y; current_y < y + height ; current_y++) {
-    for (int current_x = x; current_x < x + width ; current_x++){
+  for (int current_y = y ; current_y < y + height; current_y++) {
+    for (int current_x = x ; current_x < x + width ; current_x++){
       draw_pixel(current_x, current_y, color);
     }
   }
