@@ -135,11 +135,17 @@ void update(void){
     for (int j = 0; j < 3; j++) {
       vec4_t transformed_vertex = vec4_from_vec3(face_vertices[j]);
 
+      mat4_t world_matrix = mat4_identity();
+      world_matrix = mat4_mul_mat4(scale_matrix, world_matrix);
+
+      //NOTE(Brandon): Order matters!!! Scale -> Rotate -> translate
       transformed_vertex = mat4_mul_vec4(scale_matrix, transformed_vertex);
       transformed_vertex = mat4_mul_vec4(rotation_z_matrix, transformed_vertex);
       transformed_vertex = mat4_mul_vec4(rotation_x_matrix, transformed_vertex);
       transformed_vertex = mat4_mul_vec4(rotation_y_matrix, transformed_vertex);
       transformed_vertex = mat4_mul_vec4(tranlation_matrix, transformed_vertex);
+
+      transformed_vertex = mat4_mul_vec4(world_matrix, transformed_vertex);
 
       transformed_vertices[j] = transformed_vertex;
     }
