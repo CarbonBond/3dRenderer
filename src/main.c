@@ -13,6 +13,7 @@
 #include "vector.h"
 #include "mesh.h"
 #include "array.h"
+#include "matrix.h"
 
 /*NOTE(Brandon):Array of triangles  that should be rendered frame by frame */
 triangle_t* triangles_to_render = NULL;
@@ -110,6 +111,16 @@ void update(void){
   mesh.rotation.x += 0.003;
   mesh.rotation.z += 0.004;
 
+  mesh.scale.x = 2.0;
+  mesh.scale.y = 1.5;
+  mesh.translation.z = 5.0;
+
+  mat4_t scale_matrix = mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
+  mat4_t tranlation_matrix = mat4_make_transform(mesh.translation.x, mesh.translation.y, mesh.translation.z); 
+  mat4_t rotation_z_matrix = mat4_make_rotation_z(mesh.rotation.z); 
+  mat4_t rotation_x_matrix = mat4_make_rotation_x(mesh.rotation.x); 
+  mat4_t rotation_y_matrix = mat4_make_rotation_y(mesh.rotation.y); 
+
 
   /*NOTE(Brandon): Loop over all the faces */
   for (int i = 0; i < (array_length(mesh.faces)); i++) {
@@ -120,18 +131,16 @@ void update(void){
     face_vertices[1] = mesh.vertices[triangle_face.b - 1];
     face_vertices[2] = mesh.vertices[triangle_face.c - 1];
 
-    vec3_t transformed_vertices[3];
-
-
+    vec4_t transformed_vertices[3];
     for (int j = 0; j < 3; j++) {
-      vec3_t transformed_vertex = face_vertices[j];
-      
-      transformed_vertex = vec3_rotate_x(transformed_vertex, mesh.rotation.x);
-      transformed_vertex = vec3_rotate_y(transformed_vertex, mesh.rotation.y);
-      transformed_vertex = vec3_rotate_z(transformed_vertex, mesh.rotation.z);
+      vec4_t transformed_vertex = vec4_from_vec3(face_vertices[j]);
 
-      /*NOTE(Brandon):Translate the vertex away from the camera */
-      transformed_vertex.z += 5;
+      transformed_vertex = mat4_mul_vec4(scale_matrix, transformed_vertex);
+      transformed_vertex = mat4_mul_vec4(rotation_z_matrix, transformed_vertex);
+      transformed_vertex = mat4_mul_vec4(rotation_x_matrix, transformed_vertex);
+      transformed_vertex = mat4_mul_vec4(rotation_y_matrix, transformed_vertex);
+      transformed_vertex = mat4_mul_vec4(tranlation_matrix, transformed_vertex);
+
       transformed_vertices[j] = transformed_vertex;
     }
 
@@ -139,9 +148,9 @@ void update(void){
     /*
      * NOTE(Brandon): Get the Normal vector 
      * */
-    vec3_t vector_a = transformed_vertices[0];
-    vec3_t vector_b = transformed_vertices[1];
-    vec3_t vector_c = transformed_vertices[2];
+    vec3_t vector_a = vec3_from_vec4(transformed_vertices[0]);
+    vec3_t vector_b = vec3_from_vec4(transformed_vertices[1]);
+    vec3_t vector_c = vec3_from_vec4(transformed_vertices[2]);
     vec3_t vector_ab = vec3_sub(vector_b,vector_a);
     vec3_t vector_ac = vec3_sub(vector_c, vector_a);
     /*
@@ -169,7 +178,7 @@ void update(void){
 
     vec2_t projected_points[3];
     for(int j = 0; j < 3; j++){
-      projected_points[j] = project(transformed_vertices[j]);
+      projected_points[j] = project(vec3_from_vec4(transformed_vertices[j]));
       /*NOTE(Brandon): Scale and translate the points to the middle of the
        *               screen*/
       projected_points[j].x += (window_width/2.);
@@ -236,7 +245,6 @@ void render(void){
 void free_resources(void) {
   array_free(mesh.faces);
   array_free(mesh.vertices);
-  free(color_buffer);
 };
 int main(int argc, char *argv[])
 {
