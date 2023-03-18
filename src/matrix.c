@@ -81,3 +81,26 @@ mat4_t mat4_mul_mat4(mat4_t a, mat4_t b) {
   }
   return r;
 }
+mat4_t mat4_make_perspective(float fov, float aspect, float znear, float zfar) {
+  mat4_t r = {{{ 0 }}};
+  double t = 1 / tan(fov / 2);
+  r.m[0][0] = aspect * t;
+  r.m[1][1] = t;
+  r.m[2][2] = zfar / (zfar - znear);
+  r.m[2][3] = -((zfar*znear)/(zfar-znear));
+  r.m[3][2] = 1.;
+  return r;
+}
+
+vec4_t mat4_mul_vec4_project(mat4_t mat_proj, vec4_t v){
+  vec4_t r = mat4_mul_vec4(mat_proj, v);
+
+  //Note(Brandon) perspective device)
+  if(r.w != 0.0){
+    r.x /= r.w;
+    r.y /= r.w;
+    r.z /= r.w;
+  }
+
+  return r;
+}

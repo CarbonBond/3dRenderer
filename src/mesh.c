@@ -12,6 +12,7 @@ mesh_t mesh = {
   .scale = {1., 1., 1.}
 };
 
+/* TEST CUBE LOAD
 vec3_t cube_vertices[N_CUBE_VERTICES] = {
   {.x = -1, .y = -1, .z = -1},
   {.x = -1, .y =  1, .z = -1},
@@ -52,6 +53,7 @@ void load_cube_mesh_data(void){
     array_push(mesh.faces, cube_face);
   }
 }
+*/
 
 #define LINE_SIZE (1000)
 void load_obj_file_data(char* filename, mesh_t* mesh) {
@@ -85,7 +87,9 @@ void load_obj_file_data(char* filename, mesh_t* mesh) {
           &vertex_indices[2], &texture_indices[2], &normal_indices[2]);
       face_t face = {.a = vertex_indices[0], 
                      .b = vertex_indices[1],
-                     .c = vertex_indices[2]};
+                     .c = vertex_indices[2],
+                     .color = 0xFFFFFFFF
+                    };
       array_push(mesh->faces, face);
     }
   }

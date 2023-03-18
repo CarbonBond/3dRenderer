@@ -3,6 +3,7 @@
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_video.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -14,13 +15,17 @@
 #include "mesh.h"
 #include "array.h"
 #include "matrix.h"
+#include "light.h"
+
+#define MATH_PI 3.1415926535897932384 
+
 
 /*NOTE(Brandon):Array of triangles  that should be rendered frame by frame */
 triangle_t* triangles_to_render = NULL;
 
 vec3_t camera_position = {.x = 0, .y = 0, .z = 0};
+mat4_t proj_matrix;
 
-int fov_factor = 640;
 
 bool is_running = false;
 int previous_frame_time = 0;
@@ -47,10 +52,16 @@ void setup(void){
       window_height
       );
 
+  float fov = (100./180)*MATH_PI; //100deg in radians 
+  float aspect = ((float)window_height/(float)window_width);
+  proj_matrix = mat4_make_perspective(fov,
+                                      aspect,
+                                      0.1, //Znear
+                                      100.); //Zfar
 
   //load_cube_mesh_data();
-  load_obj_file_data("./asset/cube.obj", &mesh);
-  //load_obj_file_data("./asset/suzanne.obj", &mesh);
+//load_obj_file_data("./asset/cube.obj", &mesh);
+  load_obj_file_data("./asset/suzanne.obj", &mesh);
 }
 
 void process_input(void) {
@@ -91,12 +102,6 @@ void process_input(void) {
   }
 }
 
-vec2_t project(vec3_t point) {
-  vec2_t projected_point = {
-    .x = ((point.x * fov_factor) / point.z) ,
-    .y = ((point.y * fov_factor) / point.z)   };
-  return projected_point;
-}
 
 void update(void){
 
@@ -111,8 +116,8 @@ void update(void){
   mesh.rotation.x += 0.003;
   mesh.rotation.z += 0.004;
 
-  mesh.scale.x = 2.0;
-  mesh.scale.y = 1.5;
+//mesh.scale.x = 2.0;
+//mesh.scale.y = 1.5;
   mesh.translation.z = 5.0;
 
   mat4_t scale_matrix = mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
@@ -165,6 +170,7 @@ void update(void){
     vec3_normlize(&vector_ab);
     vec3_normlize(&vector_ac);
     vec3_t normal = vec3_cross(vector_ab, vector_ac);
+    vec3_normlize(&normal);
 
     vec3_t camera_ray = vec3_sub(camera_position, vector_a);
     vec3_normlize(&camera_ray);
@@ -182,19 +188,28 @@ void update(void){
     if(dot_normal_camera < 0 && render_options.backface) continue;
 
 
-    vec2_t projected_points[3];
+    vec4_t projected_points[3];
     for(int j = 0; j < 3; j++){
-      projected_points[j] = project(vec3_from_vec4(transformed_vertices[j]));
-      /*NOTE(Brandon): Scale and translate the points to the middle of the
-       *               screen*/
-      projected_points[j].x += (window_width/2.);
-      projected_points[j].y += (window_height/2.);
+      projected_points[j] = mat4_mul_vec4_project(proj_matrix, transformed_vertices[j]);
+
+      //Note(Brandon): Scale into the view
+      projected_points[j].x *= (window_width / 2.);
+      projected_points[j].y *= (window_height / 2.);
+
+      /*NOTE(Brandon): translate the points to the middle of the screen*/
+      projected_points[j].x += (window_width / 2.);
+      projected_points[j].y += (window_height / 2.);
     }
 
     //Note(Brandon): Calculate avg depth of face
     float avg_depth = (transformed_vertices[0].z +
                        transformed_vertices[1].z+
                        transformed_vertices[2].z) / 3; 
+
+    //Note(Brandon) Light the faces of the triangle based on how they are 
+    //              positioned from the sun.
+    float light_amount = -vec3_dot(normal, light.direction);
+    uint32_t lighted_color = light_apply_intensity(triangle_face.color, light_amount); 
 
     triangle_t projected_triangle = {
       .points = {
@@ -203,6 +218,7 @@ void update(void){
         { projected_points[2].x, projected_points[2].y },
       },
       .avg_depth = avg_depth,
+      .color = lighted_color
     };
 
     /*NOTE(Brandon):Save the projected triangle ine the array
@@ -224,7 +240,7 @@ void render(void){
       draw_filled_triangle(triangle.points[0].x, triangle.points[0].y,
                            triangle.points[1].x, triangle.points[1].y,
                            triangle.points[2].x, triangle.points[2].y,
-                           0xAA00AA00);
+                           triangle.color);
     }
     if(render_options.wireframe){
       draw_triangle(triangle.points[0].x, triangle.points[0].y,
@@ -243,7 +259,7 @@ void render(void){
   array_free(triangles_to_render);
 
   render_color_buffer();
-  clear_color_buffer(0xFF888888);
+  clear_color_buffer(0xFFCCCC10);
 
   SDL_RenderPresent(renderer);
 }
