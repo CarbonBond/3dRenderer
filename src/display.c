@@ -46,6 +46,7 @@ bool initialize_window(void) {
   /*TODO(Brandon): Create a SLD renderer */
   return true;
 }
+
 void clear_color_buffer(uint32_t color){
   for (int y = 0; y < window_height; y++)
   {

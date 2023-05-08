@@ -54,6 +54,7 @@ vec3_t vec3_cross(vec3_t a, vec3_t b){
               .z = ((a.x*b.y) - (a.y*b.x))};
   return r;
 }
+
 float vec3_length(vec3_t v){
   return sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
 }
