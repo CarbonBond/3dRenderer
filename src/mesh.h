@@ -19,6 +19,7 @@ typedef struct {
   vec3_t scale;
 } mesh_t;
 
+
 extern mesh_t mesh;
 
 void load_cube_mesh_data(void);
