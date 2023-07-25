@@ -29,7 +29,7 @@ vec2_t vec2_div(vec2_t v, float factor){
 float vec2_dot(vec2_t a, vec2_t b){
   return (a.x * b.x) + (a.y * b.y);
 }
-void vec2_normlize(vec2_t *v){
+void vec2_normalize(vec2_t *v){
   float len = vec2_length(*v);
   v->x /= len;
   v->y /= len;
@@ -37,7 +37,7 @@ void vec2_normlize(vec2_t *v){
 /*
  * NOTE(Brandon): Vector 3D Functions 
  */
-void vec3_normlize(vec3_t *v){
+void vec3_normalize(vec3_t *v){
   float len = vec3_length(*v);
   v->x /= len;
   v->y /= len;
